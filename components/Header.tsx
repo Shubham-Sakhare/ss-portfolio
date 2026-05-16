@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Sun, Moon } from "lucide-react";
 
 const navLinks = [
   { name: "Home", href: "#home" },
@@ -38,16 +39,30 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-slate-950 shadow-md transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <header className="fixed top-4 left-0 w-full flex justify-center z-50">
+
+      {/* GLASS NAV CONTAINER */}
+      <div className="w-[92%] md:w-[85%] lg:w-[75%]
+        bg-white/10 dark:bg-black/30
+        backdrop-blur-xl
+        border border-white/20 dark:border-white/10
+        shadow-lg
+        rounded-full
+        px-6 py-3
+        flex justify-between items-center
+      ">
 
         {/* LOGO */}
-        <Link href="/" className="text-xl font-bold text-black dark:text-white">
+        <Link
+          href="/"
+          className="text-lg font-bold text-black dark:text-white"
+        >
           Shubham.dev
         </Link>
 
-        {/* DESKTOP */}
-        <nav className="hidden md:flex gap-6 items-center">
+        {/* DESKTOP MENU */}
+        <nav className="hidden md:flex items-center gap-6">
+
           {navLinks.map((link) => {
             const isActive = active === link.href;
 
@@ -56,13 +71,10 @@ export default function Header() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setActive(link.href)}
-                className={`
-                  transition-colors duration-200 font-medium
-
-                  ${isActive 
-                    ? "text-purple-500 dark:text-blue-400" // ACTIVE
-                    : "text-gray-700 dark:text-gray-300"}  // DEFAULT
-
+                className={`text-sm font-medium transition-all duration-200
+                  ${isActive
+                    ? "text-purple-500 dark:text-blue-400"
+                    : "text-gray-700 dark:text-gray-300"}
                   hover:text-purple-500 dark:hover:text-blue-400
                 `}
               >
@@ -71,27 +83,36 @@ export default function Header() {
             );
           })}
 
-          {/* THEME BUTTON */}
-          <button
-            onClick={toggleTheme}
-            className="border border-gray-300 dark:border-gray-700 px-2 py-1 rounded"
-          >
-            {theme === "dark" ? "☀️" : "🌙"}
-          </button>
+          {/* THEME */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full bg-white/20 dark:bg-white/10 border border-white/20 hover:scale-110 transition"
+            >
+              {theme === "dark" ? (
+                <Sun size={18} className="text-yellow-400" />
+              ) : (
+                <Moon size={18} className="text-blue-300" />
+              )}
+            </button>
         </nav>
 
         {/* MOBILE */}
-        <div className="md:hidden flex gap-3 items-center">
+        <div className="md:hidden flex items-center gap-3">
+
           <button
             onClick={toggleTheme}
-            className="border border-gray-300 dark:border-gray-700 px-2 py-1 rounded"
+            className="px-3 py-1 rounded-full bg-white/20 dark:bg-white/10 text-sm"
           >
-            {theme === "dark" ? "☀️" : "🌙"}
+            {theme === "dark" ? (
+                <Sun size={18} className="text-yellow-400" />
+              ) : (
+                <Moon size={18} className="text-blue-300" />
+              )}
           </button>
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-black dark:text-white text-xl"
+            className="text-xl text-black dark:text-white"
           >
             {isOpen ? "✕" : "☰"}
           </button>
@@ -100,7 +121,10 @@ export default function Header() {
 
       {/* MOBILE MENU */}
       {isOpen && (
-        <div className="md:hidden px-4 pb-4 bg-white dark:bg-slate-950 transition-colors">
+        <div className="absolute top-20 w-[92%] bg-white/10 dark:bg-black/40
+          backdrop-blur-xl border border-white/20
+          rounded-2xl p-4 md:hidden">
+
           {navLinks.map((link) => {
             const isActive = active === link.href;
 
@@ -112,15 +136,10 @@ export default function Header() {
                   setActive(link.href);
                   setIsOpen(false);
                 }}
-                className={`
-                  block py-2 border-b border-gray-200 dark:border-gray-700
-                  transition-colors duration-200
-
+                className={`block py-2 text-sm border-b border-white/10
                   ${isActive
-                    ? "text-purple-500 dark:text-blue-400"
+                    ? "text-purple-500"
                     : "text-gray-700 dark:text-gray-300"}
-
-                  hover:text-purple-500 dark:hover:text-blue-400
                 `}
               >
                 {link.name}
