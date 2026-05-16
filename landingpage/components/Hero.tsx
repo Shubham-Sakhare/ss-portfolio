@@ -3,28 +3,57 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { fetchAPI } from "@/lib/api";
+
+type HeroData = {
+  title: string;
+  subtitle: string;
+  description: any;
+
+  buttonTextProject: string;
+  buttonLinkProject: string;
+
+  buttonResume: string;
+  ButtonLinkResume: string;
+
+  heroImage?: { url: string; alternativeText?: string };
+  BackgroundVideo?: { url: string };
+};
 
 export default function Banner(): React.JSX.Element {
-  const texts = ["Software Engineer", "UI/UX Designer", "React Native Developer"];
+  const [data, setData] = useState<HeroData | null>(null);
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "";
+
+  const texts = ["Software Engineer", "UI/UX Designer", "React Developer"];
+
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // typing effect
+  useEffect(() => {
+    fetchAPI("/api/hero?populate=*").then((json) =>
+      setData(json.data)
+    );
+  }, []);
+
   useEffect(() => {
     const currentText = texts[currentTextIndex];
 
     const timeout = setTimeout(() => {
       if (!isDeleting) {
         setDisplayedText(currentText.slice(0, displayedText.length + 1));
+
         if (displayedText === currentText) {
-          setTimeout(() => setIsDeleting(true), 1500);
+          setTimeout(() => setIsDeleting(true), 1200);
         }
       } else {
         setDisplayedText(currentText.slice(0, displayedText.length - 1));
+
         if (displayedText === "") {
           setIsDeleting(false);
-          setCurrentTextIndex((prev) => (prev + 1) % texts.length);
+          setCurrentTextIndex((p) => (p + 1) % texts.length);
         }
       }
     }, isDeleting ? 40 : 80);
@@ -32,78 +61,96 @@ export default function Banner(): React.JSX.Element {
     return () => clearTimeout(timeout);
   }, [displayedText, isDeleting, currentTextIndex]);
 
-  return (
-    <section
-      id="home"
-      className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden
-      bg-white dark:bg-black"
-    >
+  const imageUrl = data?.heroImage?.url
+    ? `${baseUrl}${data.heroImage.url}`
+    : "/assets/me.png";
 
-      {/* 🔥 Animated Gradient Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute w-[600px] h-[600px] bg-purple-500/30 blur-[120px] rounded-full top-[-100px] left-[-100px] animate-pulse" />
-        <div className="absolute w-[500px] h-[500px] bg-blue-500/30 blur-[120px] rounded-full bottom-[-100px] right-[-100px] animate-pulse" />
+  const videoUrl = data?.BackgroundVideo?.url
+    ? `${baseUrl}${data.BackgroundVideo.url}`
+    : "";
+
+  const getDescription = () =>
+    data?.description?.[0]?.children?.[0]?.text || "";
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black px-6">
+
+      {/* VIDEO BACKGROUND */}
+      {videoUrl && (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+      )}
+
+      {/* DARK OVERLAY */}
+      <div className="absolute inset-0 bg-black/60 z-0" />
+
+      {/* GLOW EFFECT */}
+      <div className="absolute inset-0">
+        <div className="absolute w-[500px] h-[500px] bg-purple-500/30 blur-[120px] top-[-100px] left-[-100px] animate-pulse" />
+        <div className="absolute w-[500px] h-[500px] bg-blue-500/30 blur-[120px] bottom-[-100px] right-[-100px] animate-pulse" />
       </div>
 
-      <div className="container mx-auto max-w-7xl grid lg:grid-cols-2 gap-10 items-center">
+      {/* CONTENT */}
+      <div className="relative z-10 container mx-auto grid lg:grid-cols-2 gap-12 items-center">
 
         {/* LEFT */}
         <motion.div
           initial={{ opacity: 0, x: -60 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-6 text-center lg:text-left backdrop-blur-sm"
+          className="text-center lg:text-left space-y-6"
         >
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Hello, I&apos;m{" "}
-            <span className="text-purple-500 dark:text-blue-400 font-semibold">
-              Shubham Sakhare
-            </span>
-          </p>
+          <span className="px-4 py-1 rounded-full bg-white/10 text-white text-sm">
+            🚀 Fullstack Developer
+          </span>
 
-          <h1 className="text-4xl lg:text-6xl font-bold leading-tight text-black dark:text-white">
-            Crafting{" "}
-            <span className="bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-pulse">
-              Stunning Experiences
+          <h1 className="text-4xl lg:text-6xl font-bold text-white">
+            Hi, I’m{" "}
+            <span className="text-transparent bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text">
+              {data?.title}
             </span>
           </h1>
 
-          <p className="text-2xl font-semibold text-black dark:text-white">
-            I&apos;m a {displayedText}
+          <h2 className="text-2xl text-gray-300">
+            {data?.subtitle}
+          </h2>
+
+          <p className="text-white text-xl">
+            I’m a{" "}
+            <span className="text-purple-400">
+              {displayedText}
+            </span>
             <span className="animate-pulse">|</span>
           </p>
 
-          <p className="text-gray-600 dark:text-white/70 max-w-xl">
-            I design and build modern digital experiences that are fast, beautiful,
-            and user-focused.
+          <p className="text-white/70 max-w-lg">
+            {getDescription()}
           </p>
 
-          {/* BUTTONS */}
+          {/* BUTTONS (FIXED) */}
           <div className="flex gap-4 justify-center lg:justify-start pt-4">
 
-            {/* Resume */}
-            <motion.a
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              href="/resume.pdf"
-              target="_blank"
-              className="px-6 py-3 rounded-xl font-medium text-white
-              bg-gradient-to-r from-purple-500 to-blue-500
-              shadow-lg shadow-purple-500/40 dark:shadow-blue-500/40"
+            <a
+              href={data?.buttonLinkProject}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium hover:scale-105 transition"
             >
-              Download Resume
-            </motion.a>
+              {data?.buttonTextProject || "View Projects"}
+            </a>
 
-            {/* Projects */}
-            <motion.a
-              whileHover={{ scale: 1.05 }}
-              href="#lab"
-              className="px-6 py-3 rounded-xl font-medium
-              border border-gray-300 dark:border-gray-700
-              text-black dark:text-white backdrop-blur-md"
+            <a
+              href={data?.ButtonLinkResume}
+              className="px-6 py-3 rounded-xl border border-white/30 text-white hover:bg-white/10 transition"
             >
-              View Projects
-            </motion.a>
+              {data?.buttonResume || "Resume"}
+            </a>
+
           </div>
         </motion.div>
 
@@ -111,31 +158,21 @@ export default function Banner(): React.JSX.Element {
         <motion.div
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
           className="flex justify-center relative"
         >
-          {/* Glow */}
-          <motion.div
-            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 4, repeat: Infinity }}
-            className="absolute w-80 h-80 bg-purple-500/30 dark:bg-blue-500/30 blur-[100px] rounded-full"
-          />
+          <div className="absolute w-80 h-80 bg-purple-500/30 blur-[100px] rounded-full animate-pulse" />
 
-          {/* Image */}
-          <motion.div
-            whileHover={{ rotate: 5, scale: 1.05 }}
-            animate={{ y: [0, -15, 0] }}
-            transition={{ duration: 4, repeat: Infinity }}
-          >
+          {data?.heroImage?.url && (
             <Image
-              src="/assets/me.png"
-              alt="Shubham"
-              width={350}
-              height={350}
-              className="rounded-full border border-white/10 shadow-2xl"
+              src={imageUrl}
+              alt="hero"
+              width={320}
+              height={320}
+              className="rounded-full border-4 border-white/20 shadow-xl object-cover z-10"
             />
-          </motion.div>
+          )}
         </motion.div>
+
       </div>
     </section>
   );
